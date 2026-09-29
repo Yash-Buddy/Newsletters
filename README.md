@@ -15,7 +15,7 @@ Each issue is two parts: a short **email** that lands in the inbox, and an **int
 
 | Issue | Topic | Link |
 |---|---|---|
-| Sep 2026 | Explore the numbers | [Open the live page](https://YOUR-USERNAME.github.io/newsletter-charts/) |
+| Sep 2026 | Solving the boring newsletter | [Open the live page](https://yash-buddy.github.io/Newsletters/issue-02.html) |
 
 ## What's inside
 
