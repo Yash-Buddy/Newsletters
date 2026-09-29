@@ -51,6 +51,18 @@ h1{font-size:38px;letter-spacing:-1.5px;margin:0 0 6px}
 .ti:before{content:"";position:absolute;top:-6px;left:0;width:10px;height:10px;border-radius:50%;background:#ee5a2c}
 .ti b{display:block;font-size:22px;letter-spacing:-1px}.ti span{font-size:13px;color:var(--mute)}
 @media(max-width:700px){.kpi{grid-template-columns:1fr 1fr}.tl{grid-template-columns:1fr 1fr;gap:24px}}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);padding:14px 24px}
+.top nav a{position:relative;padding:4px 0;opacity:.6;transition:opacity .2s}.top nav a:hover,.top nav a.on{opacity:1;text-decoration:none}
+.top nav a:after{content:"";position:absolute;left:0;bottom:-4px;height:2px;width:100%;background:#ee5a2c;transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.top nav a.on:after,.top nav a:hover:after{transform:scaleX(1)}
+.brand{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit}.dot{width:10px;height:10px;border-radius:50%;background:#ee5a2c}
+.prog{position:absolute;left:0;bottom:-1px;height:3px;background:#ee5a2c;transition:width .1s}
+.burger{display:none;background:none;border:0;font-size:22px;color:inherit;cursor:pointer}
+html{scroll-behavior:smooth}[id]{scroll-margin-top:64px}
+.socs{display:flex;gap:12px;flex-wrap:wrap}
+.foot a.soc{background:none;border:1.5px solid #f3efe8;color:#f3efe8;display:inline-flex;align-items:center;gap:8px;padding:11px 18px;text-decoration:none;font-weight:700;border-radius:99px;transition:.2s}
+.foot a.soc:hover{background:#ffc21a;border-color:#ffc21a;color:#1c1a17;transform:translateY(-3px)}
+@media(max-width:700px){.top nav{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;background:var(--bg);padding:8px 24px 16px;border-bottom:1px solid var(--grid)}.top nav.open{display:flex}.top nav a{padding:12px 0}.burger{display:block}}
 </style>
 </head>
 <body>
@@ -65,7 +77,7 @@ h1{font-size:38px;letter-spacing:-1.5px;margin:0 0 6px}
 <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
 <script>
 if(!window.Recharts||!window.React){document.getElementById('err').style.display='block'}else{
-const h=React.createElement,{useState}=React;
+const h=React.createElement,{useState,useEffect}=React;
 const {AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,CartesianGrid}=Recharts;
 const fmt=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3&&n<1e5?n.toLocaleString():n;
 const tick={fill:'#1c1a17',fontSize:12,fontFamily:'Space Grotesk'};
@@ -110,12 +122,23 @@ const E=()=>{const[a,setA]=useState(0);const r=reg[a];
   h(Pie,{data:reg,dataKey:'value',nameKey:'name',innerRadius:65,outerRadius:110,paddingAngle:2,stroke:'none',onMouseEnter:(_,i)=>setA(i),animationDuration:800},reg.map((x,i)=>h(Cell,{key:i,fill:x.fill,opacity:i===a?1:.75}))),
   h(Tooltip,{content:h(Tip)})))))};
 
-const Top=()=>h('div',{className:'top'},h('span',null,'Monthly Newsletter'),h('nav',null,['Intro','People','Growth','Email'].map(x=>h('a',{key:x,href:'#'+x.toLowerCase()},x))),h('b',null,'Sept 2026'));
+const links=[['intro','Intro'],['people','People'],['email','Email'],['growth','Growth'],['timeline','Milestones'],['follow','Follow']];
+const Top=()=>{const[act,setAct]=useState('intro');const[open,setOpen]=useState(false);const[pr,setPr]=useState(0);
+ useEffect(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setAct(e.target.id)}),{rootMargin:'-40% 0px -55% 0px'});
+  links.forEach(l=>{const el=document.getElementById(l[0]);el&&io.observe(el)});
+  const sc=()=>{const d=document.documentElement;setPr(d.scrollTop/Math.max(1,d.scrollHeight-d.clientHeight)*100)};
+  addEventListener('scroll',sc,{passive:true});return()=>{io.disconnect();removeEventListener('scroll',sc)}},[]);
+ return h('header',{className:'top'},h('a',{className:'brand',href:'#intro'},h('span',{className:'dot'}),'Newsletter Lab'),
+  h('nav',{className:open?'open':''},links.map(l=>h('a',{key:l[0],href:'#'+l[0],className:act===l[0]?'on':'',onClick:()=>setOpen(false)},l[1]))),
+  h('button',{className:'burger','aria-label':'Menu',onClick:()=>setOpen(!open)},open?'\u2715':'\u2630'),h('i',{className:'prog',style:{width:pr+'%'}}))};
 const Hero=()=>h('div',{className:'photo hero',id:'intro'},h(Img,{seed:'team-group'}),h('div',{className:'ph'},'Photo slot: team or event photo'),h('div',{className:'ht'},'OUR',h('br'),'PEOPLE'));
 const NR=[['North America',2167],['Europe',411],['Japan',710],['South Korea',72],['Australia & NZ',143],['Chile',159],['Argentina',54]];
 const Nums=()=>h('div',{className:'nums',id:'people'},h('div',{className:'nl'},h('h3',{style:{fontSize:22,margin:'0 0 10px'}},'By the numbers: Global'),h('p',null,'A snapshot of our workforce across regions, including full-time, part-time and seasonal employees. Short intro text goes here.'),h('div',{style:{fontSize:11,letterSpacing:1,textTransform:'uppercase',margin:'40px 0 6px'}},'Employees by region'),h('div',{className:'tot'},'3,716'),h('div',{style:{fontSize:13}},'Total employees')),
  h('div',{className:'ng'},NR.map(r=>h('div',{className:'nc',key:r[0]},r[0],h('b',null,r[1].toLocaleString())))));
-const Foot=()=>h('div',{className:'foot'},h('div',null,h('div',{style:{fontSize:24,fontWeight:700}},'Want the full report?'),h('div',{style:{opacity:.7,fontSize:14}},'Contact, links and social icons go here.')),h('a',{href:'#'},'Read more \u2192'));
+const Soc=(href,label,d)=>h('a',{className:'soc',href,target:'_blank',rel:'noopener','aria-label':label},h('svg',{viewBox:'0 0 24 24',width:20,height:20,fill:'currentColor'},h('path',{d})),label);
+const LI='M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z';
+const IG='M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM17.5 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z';
+const Foot=()=>h('div',{className:'foot',id:'follow'},h('div',null,h('div',{style:{fontSize:28,fontWeight:700,letterSpacing:-1}},'Stay in the loop'),h('div',{style:{opacity:.7,fontSize:14,marginTop:4}},'Follow us for the next issue and behind-the-scenes updates.')),h('div',{className:'socs'},Soc('https://www.linkedin.com/','LinkedIn',LI),Soc('https://www.instagram.com/','Instagram',IG)));
 const Img=({seed})=>h('img',{src:'https://picsum.photos/seed/'+seed+'/1400/900',alt:'',loading:'lazy',onError:e=>{e.target.style.display='none'}});
 const spark=k=>Array.from({length:12},(_,i)=>({i,Trend:Math.round(20+i*k+Math.sin(i*k)*8)}));
 const K=()=>h('div',{className:'kpi'},[['Subscribers','12.4K','+8.2%','#ee5a2c',3],['Open rate','53.1%','+4.35x','#f3a712',4],['CTR','8.7%','+10.1x','#6b68e8',5],['Revenue','$48K','+21%','#c8309f',2]].map(k=>h('div',{className:'kt',key:k[0]},h('small',null,k[0]),h('b',null,k[1]),h('em',null,k[2]),h('div',{style:{height:44,marginTop:8}},h(ResponsiveContainer,null,h(AreaChart,{data:spark(k[4])},h(Area,{type:'monotone',dataKey:'Trend',stroke:k[3],fill:k[3],fillOpacity:.3,strokeWidth:2,dot:false})))))));
