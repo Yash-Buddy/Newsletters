@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Newsletter Charts: Recharts Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f6f1;--ink:#1c1a17;--mute:#6f6a62;--grid:#00000018;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--ink:#f3efe8;--mute:#a49e94;--grid:#ffffff20}}
+:root[data-theme="dark"]{--bg:#15130f;--ink:#f3efe8;--mute:#a49e94;--grid:#ffffff20}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',Helvetica,Arial,sans-serif}
+main{max-width:1100px;margin:0 auto;padding-bottom:60px}
+h1{font-size:38px;letter-spacing:-1.5px;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 28px}
+.card{padding:28px;color:#1c1a17;min-width:0}
+.chip{display:inline-block;background:#1c1a17;color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 10px;border-radius:4px}
+.big{font-size:56px;font-weight:700;letter-spacing:-3px;line-height:1.05;margin:10px 0 2px}
+.note{font-size:14px;margin:0 0 12px;opacity:.8}
+.chart{height:280px}
+.tabs{display:flex;gap:8px;margin:8px 0}
+.tabs button{border:1.5px solid #1c1a17;background:none;border-radius:99px;padding:5px 16px;font:inherit;cursor:pointer;transition:.2s;color:#1c1a17}
+.tabs button.on{background:#1c1a17;color:#fff}
+.tip{background:#1c1a17;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;line-height:19px;box-shadow:0 6px 18px #0004}
+.lg{font-size:12px;margin-top:6px}
+#err{display:none;padding:16px;background:#fdd;color:#600;border-radius:8px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;font-size:12px;border-bottom:1px solid var(--grid)}
+.top nav{display:flex;gap:22px}.top a{color:inherit;text-decoration:none}.top a:hover{text-decoration:underline}
+.row{display:grid;grid-template-columns:1fr 1fr}
+.photo{position:relative;background:linear-gradient(135deg,#8b8579,#3f3b35);min-height:300px;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden}
+.photo .ph{position:absolute;bottom:12px;left:16px;font-size:12px;opacity:.75}
+.hero{min-height:420px}.ht{font-size:clamp(56px,14vw,150px);font-weight:700;letter-spacing:-6px;line-height:.85;text-align:center;text-shadow:0 2px 20px #0006}
+.nums{background:#ee5a2c;color:#1c1a17;display:grid;grid-template-columns:1fr 1fr;padding:28px;gap:28px}
+.nl p{font-size:14px;max-width:340px;line-height:1.45}.tot{font-size:clamp(64px,13vw,140px);font-weight:700;letter-spacing:-6px;line-height:1}
+.ng{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;align-content:start}
+.nc{border-top:1px solid #1c1a17;padding:8px 0 18px;font-size:12px}.nc b{display:block;font-size:44px;letter-spacing:-2px;font-weight:500;transition:transform .2s}.nc:hover b{transform:translateX(6px)}
+.foot{background:#1c1a17;color:#f3efe8;padding:36px 28px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.foot a{background:#ffc21a;color:#1c1a17;padding:12px 20px;text-decoration:none;font-weight:700;transition:transform .2s;display:inline-block}.foot a:hover{transform:translateY(-3px)}
+@media(max-width:700px){.row,.nums{grid-template-columns:1fr}.top nav{display:none}}
+.photo{background:radial-gradient(circle at 20% 30%,#ffc21a66,transparent 40%),radial-gradient(circle at 80% 70%,#ee5a2c99,transparent 45%),linear-gradient(135deg,#2b2620,#5b5246)!important}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05);transition:transform 1.4s ease}
+.photo:hover img{transform:scale(1.05)}.photo .ph,.photo .ht{position:relative;z-index:2}.photo .ph{position:absolute}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--grid)}
+.kt{padding:22px 24px;border-right:1px solid var(--grid);transition:background .25s}.kt:hover{background:var(--grid)}
+.kt small{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mute)}
+.kt b{font-size:38px;letter-spacing:-2px;margin-right:8px}.kt em{font-style:normal;font-size:13px;color:#2a8a4a;font-weight:700}
+.quote{padding:64px 28px;text-align:center}.quote p{font-size:clamp(26px,4.5vw,46px);line-height:1.15;letter-spacing:-1.5px;font-weight:500;max-width:800px;margin:0 auto 14px}.quote small{color:var(--mute)}
+.tl{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:36px 28px}
+.ti{border-top:2px solid var(--ink);padding:14px 12px 0 0;position:relative;transition:transform .25s}.ti:hover{transform:translateY(-5px)}
+.ti:before{content:"";position:absolute;top:-6px;left:0;width:10px;height:10px;border-radius:50%;background:#ee5a2c}
+.ti b{display:block;font-size:22px;letter-spacing:-1px}.ti span{font-size:13px;color:var(--mute)}
+@media(max-width:700px){.kpi{grid-template-columns:1fr 1fr}.tl{grid-template-columns:1fr 1fr;gap:24px}}
+</style>
+</head>
+<body>
+<main>
+<div id="err">The charts library did not load. Please refresh.</div>
+<div id="root"></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prop-types@15.8.1/prop-types.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-is@18.3.1/umd/react-is.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
+<script>
+if(!window.Recharts||!window.React){document.getElementById('err').style.display='block'}else{
+const h=React.createElement,{useState}=React;
+const {AreaChart,Area,BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,PieChart,Pie,Cell,CartesianGrid}=Recharts;
+const fmt=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3&&n<1e5?n.toLocaleString():n;
+const tick={fill:'#1c1a17',fontSize:12,fontFamily:'Space Grotesk'};
+const Tip=({active,payload,label,suffix=''})=>active&&payload&&payload.length?h('div',{className:'tip'},
+ h('b',null,label||payload[0].name),
+ payload.map((p,i)=>h('div',{key:i},h('span',{style:{color:p.color||p.payload.fill}},'● '),p.name+': '+p.value.toLocaleString()+suffix))):null;
+const Card=(bg,chip,big,note,child)=>h('div',{className:'card',style:{background:bg}},h('span',{className:'chip'},chip),h('div',{className:'big'},big),h('p',{className:'note'},note),child);
+const ax=[h(CartesianGrid,{key:'g',stroke:'#1c1a1722',vertical:false}),];
+
+// 1 stacked area: emails opened per month by type
+const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const opens=mo.map((m,i)=>({m,Broadcast:900+i*40+(i%3)*60,Attribute:300+i*70,Behavior:200+i*95+(i%2)*40,Journey:100+i*150+(i>7?i*40:0)}));
+const A=()=>Card('#ffc21a','Opens by email type','12 months','Journey-based emails grow fastest. Hover any month.',
+ h('div',{className:'chart'},h(ResponsiveContainer,null,h(AreaChart,{data:opens},
+  h(CartesianGrid,{stroke:'#1c1a1722',vertical:false}),h(XAxis,{dataKey:'m',tick,axisLine:false,tickLine:false}),h(YAxis,{tick,axisLine:false,tickLine:false,width:40}),
+  h(Tooltip,{content:h(Tip),cursor:{stroke:'#1c1a17'}}),
+  [['Broadcast','#ffe9a8'],['Attribute','#f3a712'],['Behavior','#e0541f'],['Journey','#1c1a17']].map(s=>h(Area,{key:s[0],type:'monotone',dataKey:s[0],stackId:1,stroke:s[1],fill:s[1],fillOpacity:.95})) ))));
+
+// 2 toggle bars
+const D={open:[['Broadcast',12.2],['Attribute',24.4],['Behavior',25.6],['Journey',53.1]],ctr:[['Broadcast',.86],['Attribute',1.43],['Behavior',8.72],['Journey',5.21]]};
+const B=()=>{const[m,setM]=useState('open');const data=D[m].map(d=>({name:d[0],Rate:d[1]}));
+ return Card('#cfceff','Performance',m==='open'?'53.1%':'8.72%','Toggle the metric. Bars animate between views.',
+ h('div',null,h('div',{className:'tabs'},['open','ctr'].map(k=>h('button',{key:k,className:m===k?'on':'',onClick:()=>setM(k)},k==='open'?'Open rate':'CTR'))),
+ h('div',{className:'chart'},h(ResponsiveContainer,null,h(BarChart,{data},
+  h(CartesianGrid,{stroke:'#1c1a1722',vertical:false}),h(XAxis,{dataKey:'name',tick,axisLine:false,tickLine:false}),h(YAxis,{tick,axisLine:false,tickLine:false,width:40}),
+  h(Tooltip,{content:h(Tip,{suffix:'%'}),cursor:{fill:'#1c1a1712'}}),
+  h(Bar,{dataKey:'Rate',fill:'#2a2870',radius:[8,8,0,0],animationDuration:700}))))))};
+
+// 3 staked value
+const stk=[['Feb',100000],['Mar',420000],['Apr',720000],['May',980000],['Jun',1500000],['Jul',1900000],['Aug',2400000]].map(d=>({m:d[0],Value:d[1]}));
+const C=()=>Card('#ffc8f5','Staked value','$2.4M','From $100K in February. Hover the curve.',
+ h('div',{className:'chart'},h(ResponsiveContainer,null,h(AreaChart,{data:stk},
+  h(CartesianGrid,{stroke:'#5a104922',vertical:false}),h(XAxis,{dataKey:'m',tick:{...tick,fill:'#5a1049'},axisLine:false,tickLine:false}),h(YAxis,{tick:{...tick,fill:'#5a1049'},axisLine:false,tickLine:false,width:50,tickFormatter:fmt}),
+  h(Tooltip,{content:h(Tip),cursor:{stroke:'#5a1049'}}),
+  h(Area,{type:'monotone',dataKey:'Value',stroke:'#c8309f',strokeWidth:3,fill:'#c8309f',fillOpacity:.45,animationDuration:900})))));
+
+// 4 donut
+const reg=[['North America',2167,'#1c1a17'],['Japan',710,'#7a2a10'],['Europe',411,'#ffffff'],['Chile',159,'#ffd7c2'],['Australia & NZ',143,'#b23a14'],['South Korea',72,'#5a1a08'],['Argentina',54,'#ffb08a']].map(r=>({name:r[0],value:r[1],fill:r[2]}));
+const E=()=>{const[a,setA]=useState(0);const r=reg[a];
+ return Card('#ee5a2c','Our people',r.value.toLocaleString(),r.name+': '+(r.value/3716*100).toFixed(1)+'% of 3,716 employees. Hover a slice.',
+ h('div',{className:'chart'},h(ResponsiveContainer,null,h(PieChart,null,
+  h(Pie,{data:reg,dataKey:'value',nameKey:'name',innerRadius:65,outerRadius:110,paddingAngle:2,stroke:'none',onMouseEnter:(_,i)=>setA(i),animationDuration:800},reg.map((x,i)=>h(Cell,{key:i,fill:x.fill,opacity:i===a?1:.75}))),
+  h(Tooltip,{content:h(Tip)})))))};
+
+const Top=()=>h('div',{className:'top'},h('span',null,'Monthly Newsletter'),h('nav',null,['Intro','People','Growth','Email'].map(x=>h('a',{key:x,href:'#'+x.toLowerCase()},x))),h('b',null,'Sept 2026'));
+const Hero=()=>h('div',{className:'photo hero',id:'intro'},h(Img,{seed:'team-group'}),h('div',{className:'ph'},'Photo slot: team or event photo'),h('div',{className:'ht'},'OUR',h('br'),'PEOPLE'));
+const NR=[['North America',2167],['Europe',411],['Japan',710],['South Korea',72],['Australia & NZ',143],['Chile',159],['Argentina',54]];
+const Nums=()=>h('div',{className:'nums',id:'people'},h('div',{className:'nl'},h('h3',{style:{fontSize:22,margin:'0 0 10px'}},'By the numbers: Global'),h('p',null,'A snapshot of our workforce across regions, including full-time, part-time and seasonal employees. Short intro text goes here.'),h('div',{style:{fontSize:11,letterSpacing:1,textTransform:'uppercase',margin:'40px 0 6px'}},'Employees by region'),h('div',{className:'tot'},'3,716'),h('div',{style:{fontSize:13}},'Total employees')),
+ h('div',{className:'ng'},NR.map(r=>h('div',{className:'nc',key:r[0]},r[0],h('b',null,r[1].toLocaleString())))));
+const Foot=()=>h('div',{className:'foot'},h('div',null,h('div',{style:{fontSize:24,fontWeight:700}},'Want the full report?'),h('div',{style:{opacity:.7,fontSize:14}},'Contact, links and social icons go here.')),h('a',{href:'#'},'Read more \u2192'));
+const Img=({seed})=>h('img',{src:'https://picsum.photos/seed/'+seed+'/1400/900',alt:'',loading:'lazy',onError:e=>{e.target.style.display='none'}});
+const spark=k=>Array.from({length:12},(_,i)=>({i,Trend:Math.round(20+i*k+Math.sin(i*k)*8)}));
+const K=()=>h('div',{className:'kpi'},[['Subscribers','12.4K','+8.2%','#ee5a2c',3],['Open rate','53.1%','+4.35x','#f3a712',4],['CTR','8.7%','+10.1x','#6b68e8',5],['Revenue','$48K','+21%','#c8309f',2]].map(k=>h('div',{className:'kt',key:k[0]},h('small',null,k[0]),h('b',null,k[1]),h('em',null,k[2]),h('div',{style:{height:44,marginTop:8}},h(ResponsiveContainer,null,h(AreaChart,{data:spark(k[4])},h(Area,{type:'monotone',dataKey:'Trend',stroke:k[3],fill:k[3],fillOpacity:.3,strokeWidth:2,dot:false})))))));
+const Dn=({bg,chip,data,note})=>{const[a,setA]=useState(0);const r=data[a];
+ return Card(bg,chip,r.value+'%',r.name+'. '+note,h('div',{className:'chart'},h(ResponsiveContainer,null,h(PieChart,null,h(Pie,{data,dataKey:'value',nameKey:'name',outerRadius:110,stroke:bg,strokeWidth:2,onMouseEnter:(_,i)=>setA(i),animationDuration:800},data.map((x,i)=>h(Cell,{key:i,fill:x.fill,opacity:i===a?1:.7}))),h(Tooltip,{content:h(Tip,{suffix:'%'})})))))};
+const age=[['Under 30',23.3,'#ffd7c2'],['Ages 30-49',59.3,'#1c1a17'],['Ages 50+',16.3,'#7a2a10'],['Undeclared',1.1,'#ffffff']].map(x=>({name:x[0],value:x[1],fill:x[2]}));
+const ten=[['0-1 years',14,'#ee5a2c'],['1-2 years',11,'#f8a07e'],['2-5 years',28,'#c9421a'],['5-10 years',26,'#1c1a17'],['10-15 years',11,'#f57d52'],['15-20 years',5,'#ffc7a3'],['20-25 years',2,'#8a2c0f'],['25+ years',3,'#ffd9c7']].map(x=>({name:x[0],value:x[1],fill:x[2]}));
+const Q=()=>h('div',{className:'quote'},h('p',null,'\u201CNumbers tell us where we are. People tell us where we are going.\u201D'),h('small',null,'Editor\u2019s note, placeholder quote'));
+const TL=()=>h('div',{className:'tl',id:'timeline'},[['Jan','Journey emails launched'],['Mar','Staking pool opened'],['Jun','$2.4M milestone'],['Aug','Team reaches 3,700'],['Oct','Community day']].map(t=>h('div',{className:'ti',key:t[0]},h('b',null,t[0]),h('span',null,t[1]))));
+ReactDOM.createRoot(document.getElementById('root')).render(h('div',null,h(Top),h(Hero),h(K),h(Nums),
+ h('div',{className:'row'},h(E),h('div',{id:'email'},h(B))),
+ h('div',{className:'row'},h(Dn,{bg:'#ee5a2c',chip:'Age representation',data:age,note:'Share of workforce by age group.'}),h(Dn,{bg:'#f3efe8',chip:'Tenure',data:ten,note:'Share of workforce by years of service.'})),
+ h(Q),h(TL),
+ h('div',{className:'row',id:'growth'},h(C),h('div',{className:'photo'},h(Img,{seed:'community-event'}),h('div',{className:'ph'},'Photo slot: product, community or event'))),
+ h(A),h(Foot)));
+}
+</script>
+</body>
+</html>
