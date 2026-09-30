@@ -55,6 +55,27 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){.rf.spin svg{animation:none}.c,#tip{transition:none}}
 .note{color:var(--mute);font-size:12px;padding:14px 0 40px}
 @media(max-width:900px){main{grid-template-columns:1fr}section{border-right:0!important;border-bottom:1px solid var(--line)!important}}
+
+.blk{margin:20px 0 0;border:1px solid var(--line);background:var(--panel);padding:24px}
+.blk h2{margin-bottom:6px}
+.two{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:28px;align-items:start}
+#map{width:100%;height:auto;display:block}
+#map text{font:600 10px Inter,sans-serif;fill:var(--ink)}
+.land{fill:var(--line);stroke:var(--mute);stroke-width:.8}
+.chain{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.chain li{border-left:4px solid var(--red);padding:2px 0 2px 12px}
+.chain b{display:block}
+.hist{display:grid;grid-template-columns:78px 1fr;gap:6px 12px;align-items:center}
+.hist .y{font:800 15px 'Big Shoulders Display',Impact,sans-serif}
+.bar{height:22px;position:relative;background:linear-gradient(90deg,#f0883a,var(--red));min-width:4px}
+.bar span{position:absolute;left:calc(100% + 8px);top:0;line-height:22px;white-space:nowrap;font-weight:600;font-size:12px}
+.hist .n{grid-column:2;color:var(--mute);font-size:12px;margin:-2px 0 8px}
+.hist .bw{padding-right:60px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.card{border:1px solid var(--line);border-top:4px solid var(--mute);padding:12px 14px;background:var(--bg)}
+.card.dry{border-top-color:#e58b2f}.card.wet{border-top-color:#1f6fd0}
+.card h3{margin:0 0 4px;font-size:15px}.card p{margin:0;font-size:13px;color:var(--mute)}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -87,7 +108,26 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
   <section><h2>Today by hour</h2><p class="sub">Local time in each city (°C)</p><div class="scroll"><div class="grid" id="p4"></div></div><div class="leg"><span>cool</span><i style="background:linear-gradient(90deg,hsl(130 65% 58%),hsl(65 65% 58%),hsl(0 65% 58%))"></i><span>hot</span></div></section>
   <section style="grid-column:1/-1"><h2>Country vs its own average, rain</h2><p class="sub">Rainfall per country vs 30-day mean (mm). Blue is wetter than usual, orange is drier.</p><div class="scroll"><div class="grid" id="p5"></div></div><div class="leg"><span>drier</span><i style="background:linear-gradient(90deg,#e58b2f,#f4f4f2,#1f6fd0)"></i><span>wetter</span></div></section>
 </main>
-<p class="note">Source: Open-Meteo. "Average" here means each place's own 30-day mean, which shows short-term swings, not a full climate anomaly.</p>
+
+<div class="blk"><h2>Where it starts: the Pacific off South America</h2>
+<p class="sub">El Niño begins when trade winds weaken and warm water pools along the Peru and Ecuador coast. The heat then spreads to the global south.</p>
+<div class="two">
+<svg id="map" role="img" aria-label="Map of South America showing the warm Pacific zone off Peru and Ecuador and the wet and dry areas it causes"></svg>
+<div><ol class="chain">
+<li><b>1. Trade winds weaken</b>Warm surface water that normally sits in the far west Pacific slides east.</li>
+<li><b>2. Coast heats up</b>The Niño 1+2 zone off Peru and Ecuador warms first. Fish stocks fall and coastal rain rises.</li>
+<li><b>3. Rain belts shift</b>Rain moves east. Amazon, Colombia and Venezuela turn dry, while southern Brazil and Uruguay turn wet.</li>
+<li><b>4. Effects travel west and east</b>The shifted air flow brings drought, fires and weak monsoons to Asia, Australia and Africa in the months after.</li>
+</ol></div></div></div>
+
+<div class="blk"><h2>Coming to the global south</h2>
+<p class="sub">Typical El Niño effects. Most of these regions are already in the tracker above.</p>
+<div class="cards" id="gs"></div></div>
+
+<div class="blk"><h2>Older records: strong El Niño events</h2>
+<p class="sub">Peak Oceanic Niño Index (ONI, °C above normal). Above +1.5 is strong. Values are rounded.</p>
+<div class="hist" id="hist"></div></div>
+<p class="note">Source: Open-Meteo. "Average" here means each place's own 30-day mean, which shows short-term swings, not a full climate anomaly. Historical ONI peaks are rounded from NOAA CPC records; impact notes are summaries, not a full catalogue.</p>
 </div>
 
 <script>
@@ -162,6 +202,41 @@ function hover(e){
 main.addEventListener('pointermove',hover);main.addEventListener('pointerdown',hover);
 main.addEventListener('pointerleave',()=>{clearHl();tip.classList.remove('on')});
 $('rf').onclick=load;load();setInterval(load,6e5);
+
+const H=[["2023–24",2.0,"Panama Canal drought, Amazon river lows, record heat in India and Southeast Asia"],
+["2015–16",2.6,"India drought, Indonesian peat fires, coral bleaching, Ethiopia food crisis"],
+["1997–98",2.4,"Indonesia haze fires, Peru and Ecuador floods, Kenya floods"],
+["1982–83",2.2,"Australia drought and Ash Wednesday fires, Peru and Ecuador floods, southern Africa drought"],
+["1972–73",2.0,"Peruvian anchovy collapse, Sahel and India drought, global food price spike"],
+["1991–92",1.6,"Southern Africa drought, weak Indian monsoon"],
+["1986–88",1.6,"Weak Indian monsoon in 1987, drought in Australia and Indonesia"],
+["2009–10",1.3,"Weaker Indian monsoon, drought in southern Africa"]];
+$('hist').innerHTML=H.map(h=>`<div class="y">${h[0]}</div><div class="bw"><div class="bar" style="width:${h[1]/2.6*100}%"><span>+${h[1].toFixed(1)}°C</span></div></div><div class="n">${h[2]}</div>`).join('');
+const G=[["Peru & Ecuador","wet","Coastal floods and landslides. Fishing collapses when cold, nutrient-rich water fades. Peak: Dec–Apr."],
+["Amazon & Colombia","dry","Drought, low rivers and forest fires. Heat builds late in the year. Peak: Aug–Feb."],
+["Indonesia & Philippines","dry","Delayed rains, peat fires and haze. Rice harvests suffer. Peak: Jul–Nov."],
+["Australia (north & east)","dry","Dry spring, higher bushfire risk and hotter days. Peak: Sep–Dec."],
+["India","dry","Weaker monsoon and longer heat spells, which hurt crops. Peak: Jun–Sep."],
+["East Africa","wet","Heavier short rains and floods. Peak: Oct–Dec."],
+["Southern Africa","dry","Summer drought and crop failure. Peak: Dec–Mar."]];
+$('gs').innerHTML=G.map(g=>`<div class="card ${g[1]}"><h3>${g[0]}</h3><p>${g[1]==='dry'?'Drier and hotter. ':'Wetter. '}${g[2]}</p></div>`).join('');
+(function(){
+const P=(lo,la)=>[((lo+95)*4.6).toFixed(0),((14-la)*4.6).toFixed(0)];
+const L=[[-77.5,8.5],[-72,12],[-67,10.5],[-62,10.5],[-60,8],[-55,5.5],[-51,4],[-50,0],[-44,-2.5],[-38,-4],[-35,-6],[-35,-9],[-39,-14],[-39,-18],[-41,-22],[-45,-23.5],[-48,-26],[-49,-29],[-53,-34],[-57,-35],[-58,-38],[-62,-39],[-65,-41],[-64,-45],[-67,-47],[-69,-51],[-68,-54],[-71,-54],[-74,-52],[-75,-47],[-73,-42],[-73.5,-37],[-71.5,-30],[-70.5,-24],[-70.3,-18],[-76,-14],[-79,-8],[-81,-5],[-80,-1],[-80,1],[-78,2.5]];
+const pts=L.map(a=>P(...a).join(',')).join(' ');
+const b1=P(-90,0),b2=P(-80,-10),w=P(-85,-5);
+const Z=[[-79,-4,"#1f6fd0","Floods"],[-66,-2,"#e58b2f","Drought, heat"],[-58,-30,"#1f6fd0","Heavy rain"],[-70,6,"#e58b2f","Dry"]];
+const Ci=[["Lima",-77.04,-12.05],["Guayaquil",-79.92,-2.17]];
+$('map').setAttribute('viewBox','0 0 300 330');
+$('map').innerHTML=`<defs><radialGradient id="wp"><stop offset="0" stop-color="#ec4e44" stop-opacity=".85"/><stop offset="1" stop-color="#ec4e44" stop-opacity="0"/></radialGradient></defs>
+<ellipse cx="${w[0]}" cy="${w[1]}" rx="60" ry="55" fill="url(#wp)"/>
+<polygon class="land" points="${pts}"/>
+<rect x="${b1[0]}" y="${b1[1]}" width="${b2[0]-b1[0]}" height="${b2[1]-b1[1]}" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="4" y="${+b1[1]-6}" style="fill:var(--red)">Niño 1+2 warm zone</text>
+<text x="4" y="14" style="font-weight:400;fill:var(--mute)">← Niño 3.4 zone lies ~5,000 km west</text>
+${Z.map(z=>{const q=P(z[0],z[1]);return `<circle cx="${q[0]}" cy="${q[1]}" r="6" fill="${z[2]}" stroke="var(--panel)" stroke-width="2"/><text x="${+q[0]+10}" y="${+q[1]+4}">${z[3]}</text>`}).join('')}
+${Ci.map(c=>{const q=P(c[1],c[2]);return `<rect x="${q[0]-2}" y="${q[1]-2}" width="4" height="4" fill="var(--ink)"/><text x="${+q[0]-6}" y="${+q[1]+3}" text-anchor="end" style="font-weight:400;font-size:9px">${c[0]}</text>`}).join('')}`;
+})();
 </script>
 <div id="tip" role="tooltip"></div>
 </body>
