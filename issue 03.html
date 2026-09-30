@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El Niño Watch: heatmap comparison</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Inter:wght@400;600&display=swap">
+<style>
+:root{--bg:#f1f0ed;--panel:#f8f8f6;--ink:#1b1b1b;--mute:#6b6b6b;--line:#d9d8d4;--red:#ec4e44}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141414;--panel:#1d1d1c;--ink:#f3f2ee;--mute:#9a9a95;--line:#333}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,sans-serif}
+.top{display:flex;height:34px}.top i{flex:1;background:var(--ink)}.top b{flex:2.2;background:var(--red)}
+.wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+header{padding:28px 0 12px}
+h1,h2{font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif;font-weight:800;text-transform:uppercase;margin:0;line-height:1}
+h1{font-size:clamp(34px,6vw,64px)}h2{font-size:28px;margin-bottom:6px}
+.meta,.sub{color:var(--mute);font-size:13px}.sub{margin:0 0 18px}
+.today{border-left:6px solid var(--red);background:var(--panel);padding:14px 18px;margin:8px 0 20px}
+.today h3{margin:0 0 4px;font-size:15px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3fbf5f;margin-right:6px}.dot.off{background:#e0a030}
+main{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);background:var(--panel)}
+section{padding:24px;min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+section:nth-child(2n){border-right:0}section:nth-child(n+3){border-bottom:0}
+.scroll{overflow-x:auto}.grid{display:grid;gap:1px;min-width:480px}
+.hd,.lab,.cty{font-family:'Big Shoulders Display',Impact,'Arial Narrow',sans-serif;font-weight:800;text-transform:uppercase;font-size:13px;display:flex;align-items:center;white-space:nowrap}
+.hd{color:var(--mute);height:24px}.cty{color:var(--red)}
+.c{height:24px;outline:1px solid var(--panel)}
+.leg{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--mute);font-size:12px}.leg i{width:180px;height:10px}
+button{font:600 13px Inter,sans-serif;background:var(--ink);color:var(--bg);border:0;padding:9px 14px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
+.hero{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-end;padding:32px 0 20px}
+.hero p{margin:10px 0 0;color:var(--mute);max-width:520px}
+.tools{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.rf{display:inline-flex;gap:8px;align-items:center;border-radius:999px;padding:11px 20px;background:linear-gradient(135deg,#ec4e44,#f0883a);color:#fff;box-shadow:0 8px 18px -8px rgba(236,78,68,.7);transition:transform .15s,box-shadow .15s}
+.rf:hover{transform:translateY(-1px);box-shadow:0 12px 20px -8px rgba(236,78,68,.8)}.rf:active{transform:scale(.97)}
+.rf[disabled]{opacity:.75;cursor:wait}.rf.spin svg{animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 20px}
+.stat{flex:1 1 200px;background:var(--panel);border:1px solid var(--line);padding:12px 16px}
+.stat small{display:block;color:var(--mute);font-size:12px}
+.stat b{font-family:'Big Shoulders Display',Impact,sans-serif;font-size:26px;text-transform:uppercase;line-height:1.1}
+.hint{color:var(--mute);font-size:12px;margin:0 0 10px}
+.c{transition:opacity .12s}
+.grid.hover .c{opacity:.4}.grid.hover .c.hl{opacity:1}
+.c.on{outline:2px solid var(--ink);position:relative;z-index:2}
+#tip{position:fixed;left:0;top:0;pointer-events:none;z-index:99;background:var(--ink);color:var(--bg);padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.4;min-width:160px;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#tip.on{opacity:1;transform:none}
+#tip .t{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px}
+#tip i{width:12px;height:12px;border-radius:3px;flex:none;border:1px solid rgba(255,255,255,.4)}
+#tip .v{font-family:'Big Shoulders Display',Impact,sans-serif;font-size:28px;line-height:1.1;margin:4px 0 2px}
+#tip .m{opacity:.75}
+@media(prefers-reduced-motion:reduce){.rf.spin svg{animation:none}.c,#tip{transition:none}}
+.note{color:var(--mute);font-size:12px;padding:14px 0 40px}
+@media(max-width:900px){main{grid-template-columns:1fr}section{border-right:0!important;border-bottom:1px solid var(--line)!important}}
+</style>
+</head>
+<body>
+<div class="top"><i></i><b></b></div>
+<div class="wrap">
+<div class="hero">
+  <div>
+    <h1>El Niño Watch</h1>
+    <p>Heat and rainfall across 8 countries, compared side by side with live data.</p>
+  </div>
+  <div class="tools">
+    <span class="pill" id="status">Loading…</span>
+    <button class="rf" id="rf" type="button" aria-label="Refresh data"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg><span>Refresh</span></button>
+  </div>
+</div>
+<div class="stats" id="stats"></div>
+
+<!-- ✏️ EDIT THIS BLOCK EACH DAY BEFORE YOU COMMIT -->
+<div class="today">
+  <h3>Today's activity · 30 Sep 2026</h3>
+  <div>Write your daily note here: for example, which city is hottest, where rainfall is unusually low, or any El Niño advisory you spotted.</div>
+</div>
+<!-- ✏️ END EDIT BLOCK -->
+
+<p class="hint">Hover or tap any cell to see its value. Its row and column light up so you can compare.</p>
+<main>
+  <section><h2>Daily high (°C)</h2><p class="sub">Last 30 days, by city</p><div class="scroll"><div class="grid" id="p1"></div></div><div class="leg"><span>cool</span><i style="background:linear-gradient(90deg,hsl(130 65% 58%),hsl(65 65% 58%),hsl(0 65% 58%))"></i><span>hot</span></div></section>
+  <section><h2>Country vs its own average</h2><p class="sub">Daily high minus the 30-day mean, averaged per country (°C)</p><div class="scroll"><div class="grid" id="p2"></div></div><div class="leg"><span>cooler</span><i style="background:linear-gradient(90deg,#3b78d8,#f4f4f2,#e0483d)"></i><span>hotter</span></div></section>
+  <section><h2>Rainfall (mm)</h2><p class="sub">Last 30 days, by city. Dry rows point to drought.</p><div class="scroll"><div class="grid" id="p3"></div></div><div class="leg"><span>dry</span><i style="background:linear-gradient(90deg,#f4f4f2,#7fb2e5,#1f4e9c)"></i><span>wet</span></div></section>
+  <section><h2>Today by hour</h2><p class="sub">Local time in each city (°C)</p><div class="scroll"><div class="grid" id="p4"></div></div><div class="leg"><span>cool</span><i style="background:linear-gradient(90deg,hsl(130 65% 58%),hsl(65 65% 58%),hsl(0 65% 58%))"></i><span>hot</span></div></section>
+  <section style="grid-column:1/-1"><h2>Country vs its own average, rain</h2><p class="sub">Rainfall per country vs 30-day mean (mm). Blue is wetter than usual, orange is drier.</p><div class="scroll"><div class="grid" id="p5"></div></div><div class="leg"><span>drier</span><i style="background:linear-gradient(90deg,#e58b2f,#f4f4f2,#1f6fd0)"></i><span>wetter</span></div></section>
+</main>
+<p class="note">Source: Open-Meteo. "Average" here means each place's own 30-day mean, which shows short-term swings, not a full climate anomaly.</p>
+</div>
+
+<script>
+const C=[["Indonesia","Jakarta",-6.21,106.85],["Indonesia","Surabaya",-7.25,112.75],["Indonesia","Makassar",-5.15,119.43],["Philippines","Manila",14.6,120.98],["Philippines","Cebu",10.32,123.89],["Japan","Tokyo",35.68,139.69],["Japan","Osaka",34.69,135.5],["Australia","Darwin",-12.46,130.84],["Australia","Brisbane",-27.47,153.03],["India","Delhi",28.61,77.21],["India","Mumbai",19.08,72.88],["India","Chennai",13.08,80.27],["India","Kolkata",22.57,88.36],["Peru","Lima",-12.05,-77.04],["Ecuador","Guayaquil",-2.17,-79.92],["Thailand","Bangkok",13.75,100.5]];
+const $=id=>document.getElementById(id), mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const clamp=x=>Math.min(1,Math.max(0,x));
+const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+const rgb=a=>`rgb(${a})`;
+const heat=t=>`hsl(${Math.round(130*(1-clamp((t-14)/30)))} 65% 58%)`;
+const div=(neg,pos,lim)=>v=>{const t=clamp(Math.abs(v)/lim),n=[244,244,242];return rgb(mix(n,v<0?neg:pos,t))};
+const anom=div([59,120,216],[224,72,61],4);
+const rainAn=div([229,139,47],[31,111,208],10);
+const rain=v=>{const t=clamp(v/25),n=[244,244,242];return rgb(t<.5?mix(n,[127,178,229],t*2):mix([127,178,229],[31,78,156],(t-.5)*2))};
+
+function draw(id,rows,heads,color,unit,isDiff){
+  const n=rows[0].v.length;
+  let h='<div class="hd"></div>'+heads.map(x=>`<div class="hd">${x}</div>`).join('');
+  let last='';
+  rows.forEach((r,ri)=>{
+    if(r.g&&r.g!==last){last=r.g;h+=`<div class="cty" style="grid-column:1/-1;height:20px">${r.g}</div>`}
+    const avg=mean(r.v);
+    h+=`<div class="lab">${r.n}</div>`+r.v.map((v,i)=>`<div class="c" data-ri="${ri}" data-i="${i}" data-n="${r.n}" data-g="${r.g||''}" data-col="${heads.full[i]}" data-v="${v.toFixed(1)}" data-d="${(v-avg).toFixed(1)}" data-u="${unit}" data-diff="${isDiff?1:''}" data-bg="${color(v)}" style="background:${color(v)}"></div>`).join('');
+  });
+  const el=$(id);el.style.gridTemplateColumns=`96px repeat(${n},1fr)`;el.innerHTML=h;
+}
+const group=(d,key)=>{const o={};d.forEach(c=>(o[c.g]=o[c.g]||[]).push(c[key]));
+  return Object.entries(o).map(([g,arr])=>({n:g,v:arr[0].map((_,i)=>mean(arr.map(a=>a[i])))}))};
+const rel=v=>v.map(x=>x-mean(v));
+
+function sample(){return C.map(([g,n,la],i)=>{const b=30-Math.abs(la)*.3;return{g,n,d:Array.from({length:30},(_,k)=>b+Math.sin(k/4+i)*2),r:Array.from({length:30},(_,k)=>Math.max(0,Math.sin(k/3+i*2)*9)),h:Array.from({length:24},(_,k)=>b-4+5*Math.sin((k-8)/24*6.28))}})}
+
+async function load(){
+  const rf=$('rf');rf.classList.add('spin');rf.disabled=true;
+  let data,dates,live=true;
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${C.map(c=>c[2])}&longitude=${C.map(c=>c[3])}&hourly=temperature_2m&daily=temperature_2m_max,precipitation_sum&past_days=29&forecast_days=1&timezone=auto`;
+    const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+    data=j.map((d,i)=>({g:C[i][0],n:C[i][1],d:d.daily.temperature_2m_max.map(x=>x??0),r:d.daily.precipitation_sum.map(x=>x??0),h:d.hourly.temperature_2m.slice(-24).map(x=>x??0)}));
+    dates=j[0].daily.time;
+  }catch(e){live=false;data=sample();dates=Array.from({length:30},(_,i)=>new Date(Date.now()-(29-i)*864e5).toISOString().slice(0,10))}
+  const f=s=>new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const dh=dates.map((d,i)=>i%5?'':f(d));dh.full=dates.map(f);
+  const hh=Array.from({length:24},(_,i)=>i%3?'':i+'h');hh.full=Array.from({length:24},(_,i)=>i+':00');
+  draw('p1',data.map(c=>({g:c.g,n:c.n,v:c.d})),dh,heat,'°C');
+  draw('p2',group(data.map(c=>({g:c.g,a:rel(c.d)})),'a'),dh,anom,'°C',true);
+  draw('p3',data.map(c=>({g:c.g,n:c.n,v:c.r})),dh,rain,' mm');
+  draw('p4',data.map(c=>({g:c.g,n:c.n,v:c.h})),hh,heat,'°C');
+  draw('p5',group(data.map(c=>({g:c.g,a:rel(c.r)})),'a'),dh,rainAn,' mm',true);
+  const hot=data.reduce((a,b)=>b.d[29]>a.d[29]?b:a),tot=c=>c.r.reduce((x,y)=>x+y,0);
+  const dry=data.reduce((a,b)=>tot(b)<tot(a)?b:a),wet=data.reduce((a,b)=>tot(b)>tot(a)?b:a);
+  $('stats').innerHTML=[['Hottest today',`${hot.n} ${hot.d[29].toFixed(1)}°C`],['Driest, 30 days',`${dry.n} ${tot(dry).toFixed(0)} mm`],['Wettest, 30 days',`${wet.n} ${tot(wet).toFixed(0)} mm`]].map(x=>`<div class="stat"><small>${x[0]}</small><b>${x[1]}</b></div>`).join('');
+  setTimeout(()=>{rf.classList.remove('spin');rf.disabled=false},500);
+  $('status').innerHTML=`<span class="dot ${live?'':'off'}"></span>${live?'Live · updated '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'Offline · showing sample data'}`;
+}
+
+const tip=$('tip'),main=document.querySelector('main');let cur=null;
+function clearHl(){if(!cur)return;const g=cur.parentElement;g.classList.remove('hover');g.querySelectorAll('.hl,.on').forEach(x=>x.classList.remove('hl','on'));cur=null}
+function hover(e){
+  const c=e.target.closest('.c');if(!c){clearHl();tip.classList.remove('on');return}
+  if(c!==cur){clearHl();cur=c;const g=c.parentElement;g.classList.add('hover');
+    g.querySelectorAll(`.c[data-ri="${c.dataset.ri}"],.c[data-i="${c.dataset.i}"]`).forEach(x=>x.classList.add('hl'));c.classList.add('on');
+    const d=c.dataset,sg=x=>(x>0?'+':'')+x,num=+d.v,dd=+d.d;
+    const big=d.diff?sg(d.v)+d.u:d.v+d.u;
+    const sub=d.diff?'vs its 30-day average':(Math.abs(dd)<.05?'Right at its average':sg(d.d)+d.u+(dd>0?' above':' below')+' its average');
+    tip.innerHTML=`<div class="t"><i style="background:${d.bg}"></i>${d.n}${d.g?' · '+d.g:''}</div><div class="v">${big}</div><div class="m">${d.col}</div><div class="m">${sub}</div>`;
+  }
+  const w=tip.offsetWidth,h=tip.offsetHeight;
+  let x=e.clientX+16,y=e.clientY+16;
+  if(x+w>innerWidth-8)x=e.clientX-w-16;if(y+h>innerHeight-8)y=e.clientY-h-16;
+  tip.style.left=Math.max(8,x)+'px';tip.style.top=Math.max(8,y)+'px';tip.classList.add('on');
+}
+main.addEventListener('pointermove',hover);main.addEventListener('pointerdown',hover);
+main.addEventListener('pointerleave',()=>{clearHl();tip.classList.remove('on')});
+$('rf').onclick=load;load();setInterval(load,6e5);
+</script>
+<div id="tip" role="tooltip"></div>
+</body>
+</html>
